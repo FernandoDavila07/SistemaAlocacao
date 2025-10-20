@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
-using MySqlConnector; // Precisamos disso para o erro específico
+using MySqlConnector;
 
 namespace Infrastructure.Data.Extensions
 {
@@ -32,18 +32,17 @@ namespace Infrastructure.Data.Extensions
                     // Tenta aplicar as migrações
                     context.Database.Migrate();
 
-                    // Se chegou aqui, funcionou!
                     logger.LogInformation("Migrações aplicadas com sucesso!");
-                    return; // Sai da função com sucesso
+                    return; 
                 }
-                catch (MySqlException ex) // Pega especificamente o erro do MySQL
+                catch (MySqlException ex)
                 {
                     logger.LogWarning(ex, "Não foi possível conectar/migrar o banco (Tentativa {Attempt} de {RetryCount})... tentando novamente em {Delay}s", i + 1, retryCount, delay / 1000);
 
                     if (i == retryCount - 1) // Se for a última tentativa, joga o erro
                     {
                         logger.LogError("Falha ao aplicar migrações após várias tentativas. A aplicação vai travar.");
-                        throw; // Joga o erro para fora, o que vai travar a inicialização do app
+                        throw; // Joga o erro pra fora
                     }
 
                     Thread.Sleep(delay); // Espera antes de tentar de novo

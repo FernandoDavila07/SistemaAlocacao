@@ -11,7 +11,6 @@ namespace Infrastructure.Data
         {
         }
 
-        // Mapeia suas entidades para as tabelas do banco de dados
         public DbSet<Veiculo> Veiculos { get; set; }
         public DbSet<GrupoVeiculos> GruposVeiculos { get; set; }
         public DbSet<EmpresaAssistencia> EmpresasAssistencia { get; set; }
