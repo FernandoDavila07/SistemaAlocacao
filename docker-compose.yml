@@ -1,0 +1,42 @@
+services:
+
+  # Serviço 1: Nossa API .NET
+  api:
+    build:
+      context: . # Constrói a partir do Dockerfile nesta pasta
+    container_name: sistema-alocacao-api
+    ports:
+      - "8000:8080" # Mapeia a porta 8000 (seu PC) para a 8080 (container)
+    environment:
+      # Sobrescreve a connection string para apontar para o container 'db'
+      - ConnectionStrings__DefaultConnection=Server=db;Port=3306;Database=alocacao_db;User=root;Password=docker_password
+      # Força a API a mostrar logs de nível "Information" e "Warning"
+      - Logging__LogLevel__Default=Information
+    depends_on:
+      db: # Diz para a API esperar
+        condition: service_healthy # até que o 'healthcheck' do 'db' passe
+
+  # Serviço 2: O Banco de Dados MySQL
+  db:
+    image: mysql:8.0 # Usa a imagem oficial do MySQL 8.0
+    container_name: sistema-alocacao-db
+    ports:
+      - "3307:3306" # Mapeia a porta 3307 (seu PC) para a 3306 (container)
+    environment:
+      - MYSQL_ROOT_PASSWORD=docker_password # Senha do root do banco
+      - MYSQL_DATABASE=alocacao_db # Cria este banco de dados na inicialização
+    
+    # Verificação de saúde: Garante que o MySQL está pronto
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pdocker_password"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+      
+    volumes:
+      - mysql-data:/var/lib/mysql # Garante que os dados do banco persistam
+
+# Define o volume usado acima
+volumes:
+  mysql-data:

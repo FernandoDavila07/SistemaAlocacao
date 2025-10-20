@@ -1,0 +1,50 @@
+# api-deployment.yaml (CORRIGIDO)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sistema-alocacao-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sistema-alocacao-api
+  template:
+    metadata:
+      labels:
+        app: sistema-alocacao-api
+    spec:
+      containers:
+      - name: sistema-alocacao-api
+        image: sistemaalocacaoacrfd2301.azurecr.io/sistema-alocacao-api:v3
+        ports:
+        - containerPort: 8080
+        # Adição: Variáveis de ambiente para a API se conectar ao MySQL
+        env:
+          # O Host é o nome do Service do MySQL
+          - name: DB_HOST
+            value: "mysql-service"
+          # O Banco de dados que você definiu no MySQL
+          - name: DB_NAME
+            value: "SistemaAlocacao"
+          # O usuário (root, neste caso)
+          - name: DB_USER
+            value: "root"
+          # A senha, buscando do mesmo Secret do MySQL
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mysql-secret
+                key: MYSQL_ROOT_PASSWORD
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sistema-alocacao-api-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: sistema-alocacao-api
+  ports:
+  - port: 80
+    targetPort: 8080
